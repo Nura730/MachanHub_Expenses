@@ -9,8 +9,11 @@ import Colors from "../constants/colors";
 
 const Tab = createBottomTabNavigator();
 
-export default function HouseTabs() {
-    house,
+type Props = {
+  house: any;
+};
+
+export default function HouseTabs({ house }: Props) {
   return (
     <Tab.Navigator
       screenOptions={{
@@ -25,18 +28,21 @@ export default function HouseTabs() {
     >
       <Tab.Screen
         name="Expenses"
-        component={ExpensesTab}
-      />
+      >
+        {() => <ExpensesTab houseId={house.id} />}
+      </Tab.Screen>
 
       <Tab.Screen
         name="Members"
-        component={MembersTab}
-      />
+      >
+        {() => <MembersTab houseId={house.id} />}
+      </Tab.Screen>
 
       <Tab.Screen
         name="Balances"
-        component={BalancesTab}
-      />
+      >
+        {() => <BalancesTab houseId={house.id} />}
+      </Tab.Screen>
     </Tab.Navigator>
   );
 }

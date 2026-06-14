@@ -12,12 +12,17 @@ import {
 
 import Colors from "../../constants/colors";
 
-import { getHouseMembers }
-from "../../services/houseMembers";
+import {
+  getHouseMembers,
+} from "../../services/houseMembers";
+
+type Props = {
+  houseId: string;
+};
 
 export default function MembersTab({
   houseId,
-}: any) {
+}: Props) {
   const [members, setMembers] =
     useState<any[]>([]);
 
@@ -44,7 +49,7 @@ export default function MembersTab({
         }
         renderItem={({ item }) => (
           <View
-            style={styles.memberCard}
+            style={styles.card}
           >
             <Text
               style={styles.name}
@@ -68,17 +73,17 @@ const styles =
   StyleSheet.create({
     container: {
       flex: 1,
+      padding: 16,
       backgroundColor:
         Colors.background,
-      padding: 16,
     },
 
-    memberCard: {
+    card: {
       backgroundColor:
         Colors.surface,
       padding: 16,
       borderRadius: 16,
-      marginBottom: 10,
+      marginBottom: 12,
     },
 
     name: {

@@ -10,6 +10,8 @@ import {
   Alert,
 } from "react-native";
 
+import { useNavigation } from "@react-navigation/native";
+
 import Modal from "react-native-modal";
 
 import { getUserHouses } from "../../services/houseQueries";

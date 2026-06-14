@@ -7,36 +7,42 @@ import {
 
 import { db } from "./firebase";
 
-export const getHouseMembers = async (
-  houseId: string
-) => {
-  const snapshot = await getDocs(
-    collection(
-      db,
-      "houses",
-      houseId,
-      "members"
-    )
-  );
-
-  const members = await Promise.all(
-    snapshot.docs.map(async (member) => {
-      const memberData = member.data();
-
-      const userSnap = await getDoc(
-        doc(
+export const getHouseMembers =
+  async (houseId: string) => {
+    const snapshot =
+      await getDocs(
+        collection(
           db,
-          "users",
-          memberData.uid
+          "houses",
+          houseId,
+          "members"
         )
       );
 
-      return {
-        uid: memberData.uid,
-        ...userSnap.data(),
-      };
-    })
-  );
+    const members =
+      await Promise.all(
+        snapshot.docs.map(
+          async (member) => {
+            const memberData =
+              member.data();
 
-  return members;
-};
+            const userDoc =
+              await getDoc(
+                doc(
+                  db,
+                  "users",
+                  memberData.uid
+                )
+              );
+
+            return {
+              uid:
+                memberData.uid,
+              ...userDoc.data(),
+            };
+          }
+        )
+      );
+
+    return members;
+  };
