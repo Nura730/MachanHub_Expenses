@@ -1,3 +1,5 @@
-import RegisterScreen from "./src/screens/auth/RegisterScreen";
+import RootNavigator from "./src/navigation/RootNavigator";
 
-export default RegisterScreen;
+export default function App() {
+  return <RootNavigator />;
+}
