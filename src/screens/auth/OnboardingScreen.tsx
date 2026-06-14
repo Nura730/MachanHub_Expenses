@@ -9,13 +9,13 @@ import {
 
 import Colors from "../../constants/colors";
 
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 interface Props {
   navigation: any;
 }
 
-export default function OnboardingScreen({
-  navigation,
-}: Props) {
+export default function OnboardingScreen({ navigation }: Props) {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
@@ -23,26 +23,26 @@ export default function OnboardingScreen({
           <Text style={styles.logo}>🏠</Text>
         </View>
 
-        <Text style={styles.title}>
-          MachanHub Expenses
-        </Text>
+        <Text style={styles.title}>MachanHub Expenses</Text>
 
         <Text style={styles.subtitle}>
-          Split expenses, track balances,
-          and stay friends.
+          Split expenses, track balances, and stay friends.
         </Text>
       </View>
 
       <View style={styles.bottom}>
         <TouchableOpacity
           style={styles.primaryButton}
-          onPress={() =>
-            navigation.navigate("Login")
-          }
+          onPress={async () => {
+  await AsyncStorage.setItem(
+    "onboardingCompleted",
+    "true"
+  );
+
+  navigation.replace("Login");
+}}
         >
-          <Text style={styles.primaryText}>
-            Get Started
-          </Text>
+          <Text style={styles.primaryText}>Get Started</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
