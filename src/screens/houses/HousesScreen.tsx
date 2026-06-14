@@ -12,7 +12,7 @@ import {
 
 import Modal from "react-native-modal";
 
-import { collection, getDocs } from "firebase/firestore";
+import { getUserHouses } from "../../services/houseQueries";
 
 import { auth, db } from "../../services/firebase";
 
@@ -47,14 +47,9 @@ export default function HousesScreen() {
 
   const loadHouses = async () => {
     try {
-      const snapshot = await getDocs(collection(db, "houses"));
+      const houses = await getUserHouses(auth.currentUser!.uid);
 
-      const data = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...(doc.data() as any),
-      }));
-
-      setHouses(data);
+      setHouses(houses as any);
     } catch (error) {
       console.log(error);
     }
