@@ -1,17 +1,18 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import {
   SafeAreaView,
   StyleSheet,
   Text,
   View,
+  FlatList,
+  TouchableOpacity,
   Alert,
 } from "react-native";
 
-import {
-  collection,
-  addDoc,
-} from "firebase/firestore";
+import Modal from "react-native-modal";
+
+import { collection, getDocs } from "firebase/firestore";
 
 import { auth, db } from "../../services/firebase";
 
@@ -22,85 +23,151 @@ import Button from "../../components/ui/Button";
 
 import { generateHouseCode } from "../../utils/generateHouseCode";
 
+import { createHouse } from "../../services/house";
+
+interface House {
+  id: string;
+  name: string;
+  code: string;
+}
+
 export default function HousesScreen() {
-  const [houseName, setHouseName] =
-    useState("");
+  const [houses, setHouses] = useState<House[]>([]);
 
-  const [loading, setLoading] =
-    useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleCreateHouse =
-    async () => {
-      try {
-        if (!houseName.trim()) {
-          Alert.alert(
-            "Validation",
-            "Enter house name"
-          );
-          return;
-        }
+  const [modalVisible, setModalVisible] = useState(false);
 
-        setLoading(true);
+  const [houseName, setHouseName] = useState("");
 
-        const code =
-          generateHouseCode();
+  const loadHouses = async () => {
+    try {
+      const snapshot = await getDocs(collection(db, "houses"));
 
-        await addDoc(
-          collection(db, "houses"),
-          {
-            name: houseName,
-            code,
-            createdBy:
-              auth.currentUser?.uid,
-            createdAt: Date.now(),
-          }
-        );
+      const data = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...(doc.data() as any),
+      }));
 
-        Alert.alert(
-          "Success",
-          `House created.\nJoin Code: ${code}`
-        );
+      setHouses(data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
-        setHouseName("");
-      } catch (error: any) {
-        Alert.alert(
-          "Error",
-          error.message
-        );
-      } finally {
-        setLoading(false);
+  useEffect(() => {
+    loadHouses();
+  }, []);
+
+  const handleCreateHouse = async () => {
+    try {
+      if (!houseName.trim()) {
+        Alert.alert("Validation", "Enter house name");
+        return;
       }
-    };
+
+      setLoading(true);
+
+      const code = generateHouseCode();
+
+      await createHouse(
+        houseName,
+        code,
+        auth.currentUser!.uid,
+        auth.currentUser!.email || "",
+      );
+
+      Alert.alert("Success", `House created.\nJoin Code: ${code}`);
+
+      setHouseName("");
+
+      setModalVisible(false);
+
+      loadHouses();
+    } catch (error: any) {
+      Alert.alert("Error", error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    await auth.signOut();
+  };
+
+  const renderHouse = ({ item }: { item: House }) => (
+    <TouchableOpacity style={styles.houseCard}>
+      <Text style={styles.houseName}>🏠 {item.name}</Text>
+
+      <Text style={styles.houseCode}>Code: {item.code}</Text>
+    </TouchableOpacity>
+  );
 
   return (
-    <SafeAreaView
-      style={styles.container}
-    >
-      <Text style={styles.title}>
-        Create House
-      </Text>
+    <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.welcome}>Welcome Back 👋</Text>
 
-      <Text style={styles.subtitle}>
-        Start a shared expense space
-        for your roommates.
-      </Text>
-
-      <View style={styles.form}>
-        <Input
-          label="House Name"
-          value={houseName}
-          onChangeText={setHouseName}
-          placeholder="Machan Hub"
-        />
-
-        <Button
-          title="Create House"
-          onPress={
-            handleCreateHouse
-          }
-          loading={loading}
-        />
+        <Text style={styles.email}>{auth.currentUser?.email}</Text>
       </View>
+
+      <View style={styles.statsCard}>
+        <Text style={styles.statsValue}>{houses.length}</Text>
+
+        <Text style={styles.statsLabel}>Houses Joined</Text>
+      </View>
+
+      <View style={styles.sectionHeader}>
+        <Text style={styles.sectionTitle}>My Houses</Text>
+      </View>
+
+      <FlatList
+        data={houses}
+        keyExtractor={(item) => item.id}
+        renderItem={renderHouse}
+        ListEmptyComponent={
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>No houses yet</Text>
+
+            <Text style={styles.emptySubText}>Create your first house</Text>
+          </View>
+        }
+      />
+
+      <View style={styles.footer}>
+        <TouchableOpacity
+          style={styles.secondaryButton}
+          onPress={() => setModalVisible(true)}
+        >
+          <Text style={styles.secondaryText}>Create House</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+          <Text style={styles.logoutText}>Logout</Text>
+        </TouchableOpacity>
+      </View>
+
+      <Modal
+        isVisible={modalVisible}
+        onBackdropPress={() => setModalVisible(false)}
+      >
+        <View style={styles.modalCard}>
+          <Text style={styles.modalTitle}>Create House</Text>
+
+          <Input
+            label="House Name"
+            value={houseName}
+            onChangeText={setHouseName}
+            placeholder="Machan Hub"
+          />
+
+          <Button
+            title="Create"
+            onPress={handleCreateHouse}
+            loading={loading}
+          />
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -108,26 +175,130 @@ export default function HousesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor:
-      Colors.background,
-    padding: 24,
-    justifyContent: "center",
+    backgroundColor: Colors.background,
+    padding: 20,
   },
 
-  title: {
+  header: {
+    marginTop: 20,
+  },
+
+  welcome: {
     color: Colors.text,
-    fontSize: 30,
+    fontSize: 28,
     fontWeight: "700",
   },
 
-  subtitle: {
-    color:
-      Colors.textSecondary,
-    marginTop: 10,
-    marginBottom: 40,
+  email: {
+    color: Colors.textSecondary,
+    marginTop: 6,
   },
 
-  form: {
+  statsCard: {
+    backgroundColor: Colors.surface,
+    borderRadius: 20,
+    padding: 24,
+    marginTop: 24,
+    alignItems: "center",
+  },
+
+  statsValue: {
+    color: Colors.primary,
+    fontSize: 34,
+    fontWeight: "700",
+  },
+
+  statsLabel: {
+    color: Colors.textSecondary,
+    marginTop: 6,
+  },
+
+  sectionHeader: {
+    marginTop: 30,
+    marginBottom: 16,
+  },
+
+  sectionTitle: {
+    color: Colors.text,
+    fontSize: 20,
+    fontWeight: "700",
+  },
+
+  houseCard: {
+    backgroundColor: Colors.surface,
+    padding: 18,
+    borderRadius: 18,
+    marginBottom: 12,
+  },
+
+  houseName: {
+    color: Colors.text,
+    fontSize: 18,
+    fontWeight: "600",
+  },
+
+  houseCode: {
+    color: Colors.textSecondary,
+    marginTop: 8,
+  },
+
+  emptyContainer: {
+    alignItems: "center",
+    marginTop: 60,
+  },
+
+  emptyText: {
+    color: Colors.text,
+    fontSize: 18,
+    fontWeight: "600",
+  },
+
+  emptySubText: {
+    color: Colors.textSecondary,
+    marginTop: 8,
+  },
+
+  footer: {
     gap: 12,
+    marginBottom: 20,
+  },
+
+  secondaryButton: {
+    backgroundColor: Colors.primary,
+    height: 56,
+    borderRadius: 16,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  secondaryText: {
+    color: "#fff",
+    fontWeight: "700",
+  },
+
+  logoutButton: {
+    backgroundColor: Colors.surface,
+    height: 56,
+    borderRadius: 16,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  logoutText: {
+    color: Colors.danger,
+    fontWeight: "700",
+  },
+
+  modalCard: {
+    backgroundColor: Colors.surface,
+    padding: 20,
+    borderRadius: 20,
+  },
+
+  modalTitle: {
+    color: Colors.text,
+    fontSize: 22,
+    fontWeight: "700",
+    marginBottom: 20,
   },
 });

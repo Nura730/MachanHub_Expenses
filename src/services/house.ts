@@ -1,7 +1,8 @@
 import {
-  collection,
   addDoc,
-  serverTimestamp,
+  collection,
+  doc,
+  setDoc,
 } from "firebase/firestore";
 
 import { db } from "./firebase";
@@ -9,15 +10,33 @@ import { db } from "./firebase";
 export const createHouse = async (
   name: string,
   code: string,
-  uid: string
+  uid: string,
+  email: string
 ) => {
-  return await addDoc(
+  const houseRef = await addDoc(
     collection(db, "houses"),
     {
       name,
       code,
       createdBy: uid,
-      createdAt: serverTimestamp(),
+      createdAt: Date.now(),
     }
   );
+
+  await setDoc(
+    doc(
+      db,
+      "houses",
+      houseRef.id,
+      "members",
+      uid
+    ),
+    {
+      uid,
+      email,
+      joinedAt: Date.now(),
+    }
+  );
+
+  return houseRef;
 };
