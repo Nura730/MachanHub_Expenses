@@ -26,37 +26,53 @@ import { generateHouseCode } from "../../utils/generateHouseCode";
 import { createHouse } from "../../services/house";
 
 import { joinHouseByCode } from "../../services/member";
+
+import { getUserProfile } from "../../services/user";
 interface House {
   id: string;
   name: string;
   code: string;
 }
 
-export default function HousesScreen() {
+export default function HousesScreen({ navigation }: any) {
   const [houses, setHouses] = useState<House[]>([]);
-
   const [loading, setLoading] = useState(false);
-
   const [modalVisible, setModalVisible] = useState(false);
-
   const [houseName, setHouseName] = useState("");
-
   const [joinModalVisible, setJoinModalVisible] = useState(false);
-
   const [joinCode, setJoinCode] = useState("");
+  const [loadingHouses, setLoadingHouses] = useState(true);
+  const [userName, setUserName] = useState("User");
 
-  const loadHouses = async () => {
+  const loadProfile = async () => {
     try {
-      const houses = await getUserHouses(auth.currentUser!.uid);
+      const profile = await getUserProfile(auth.currentUser!.uid);
 
-      setHouses(houses as any);
+      if (profile?.name) {
+        setUserName(profile.name);
+      }
     } catch (error) {
       console.log(error);
     }
   };
 
+  const loadHouses = async () => {
+    try {
+      setLoadingHouses(true);
+
+      const houses = await getUserHouses(auth.currentUser!.uid);
+
+      setHouses(houses as any);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoadingHouses(false);
+    }
+  };
+
   useEffect(() => {
     loadHouses();
+    loadProfile();
   }, []);
 
   const handleCreateHouse = async () => {
@@ -80,7 +96,6 @@ export default function HousesScreen() {
       Alert.alert("Success", `House created.\nJoin Code: ${code}`);
 
       setHouseName("");
-
       setModalVisible(false);
 
       loadHouses();
@@ -107,7 +122,6 @@ export default function HousesScreen() {
       Alert.alert("Success", "Joined House");
 
       setJoinCode("");
-
       setJoinModalVisible(false);
 
       loadHouses();
@@ -121,25 +135,39 @@ export default function HousesScreen() {
   };
 
   const renderHouse = ({ item }: { item: House }) => (
-    <TouchableOpacity style={styles.houseCard}>
+    <TouchableOpacity
+      style={styles.houseCard}
+      onPress={() =>
+        navigation.navigate("HouseDetails", {
+          house: item,
+        })
+      }
+    >
       <Text style={styles.houseName}>🏠 {item.name}</Text>
 
       <Text style={styles.houseCode}>Code: {item.code}</Text>
     </TouchableOpacity>
   );
 
+  if (loadingHouses) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <Text style={styles.welcome}>Loading Houses...</Text>
+      </SafeAreaView>
+    );
+  }
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.welcome}>Welcome Back 👋</Text>
+        <Text style={styles.welcome}>Welcome Back {userName} 👋</Text>
 
-        <Text style={styles.email}>{auth.currentUser?.email}</Text>
+        <Text style={styles.email}>Manage your shared expenses</Text>
       </View>
 
       <View style={styles.statsCard}>
         <Text style={styles.statsValue}>{houses.length}</Text>
 
-        <Text style={styles.statsLabel}>Houses Joined</Text>
+        <Text style={styles.statsLabel}>Active Houses</Text>
       </View>
 
       <View style={styles.sectionHeader}>

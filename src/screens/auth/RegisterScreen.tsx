@@ -14,10 +14,13 @@ import Button from "../../components/ui/Button";
 import Colors from "../../constants/colors";
 
 import { registerUser } from "../../services/auth";
+import { createUserProfile } from "../../services/user";
 
 export default function RegisterScreen({
   navigation,
 }: any) {
+  const [name, setName] = useState("");
+
   const [email, setEmail] = useState("");
 
   const [password, setPassword] = useState("");
@@ -29,6 +32,7 @@ export default function RegisterScreen({
 
   const handleRegister = async () => {
     if (
+      !name ||
       !email ||
       !password ||
       !confirmPassword
@@ -51,9 +55,20 @@ export default function RegisterScreen({
     try {
       setLoading(true);
 
-      await registerUser(
+      const result = await registerUser(
         email,
         password
+      );
+
+      await createUserProfile(
+        result.user.uid,
+        name,
+        email
+      );
+
+      Alert.alert(
+        "Success",
+        "Account Created"
       );
     } catch (error: any) {
       Alert.alert(
@@ -73,12 +88,18 @@ export default function RegisterScreen({
         </Text>
 
         <Text style={styles.subtitle}>
-          Start tracking shared expenses
-          with your roommates.
+          Start tracking shared expenses.
         </Text>
       </View>
 
       <View style={styles.form}>
+        <Input
+          label="Name"
+          value={name}
+          onChangeText={setName}
+          placeholder="Nura"
+        />
+
         <Input
           label="Email"
           value={email}
@@ -139,7 +160,6 @@ const styles = StyleSheet.create({
   subtitle: {
     color: Colors.textSecondary,
     marginTop: 10,
-    lineHeight: 22,
   },
 
   form: {

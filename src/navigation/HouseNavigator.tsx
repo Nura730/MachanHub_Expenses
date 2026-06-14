@@ -1,12 +1,16 @@
 import React from "react";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
+
+import {
+  createNativeStackNavigator,
+} from "@react-navigation/native-stack";
 
 import HousesScreen from "../screens/houses/HousesScreen";
 import HouseDetailsScreen from "../screens/house-details/HouseDetailsScreen";
 
-const Stack = createNativeStackNavigator();
+const Stack =
+  createNativeStackNavigator();
 
-export default function AppNavigator() {
+export default function HouseNavigator() {
   return (
     <Stack.Navigator
       screenOptions={{
