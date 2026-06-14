@@ -25,6 +25,7 @@ import { generateHouseCode } from "../../utils/generateHouseCode";
 
 import { createHouse } from "../../services/house";
 
+import { joinHouseByCode } from "../../services/member";
 interface House {
   id: string;
   name: string;
@@ -39,6 +40,10 @@ export default function HousesScreen() {
   const [modalVisible, setModalVisible] = useState(false);
 
   const [houseName, setHouseName] = useState("");
+
+  const [joinModalVisible, setJoinModalVisible] = useState(false);
+
+  const [joinCode, setJoinCode] = useState("");
 
   const loadHouses = async () => {
     try {
@@ -88,6 +93,31 @@ export default function HousesScreen() {
       Alert.alert("Error", error.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleJoinHouse = async () => {
+    try {
+      if (!joinCode.trim()) {
+        Alert.alert("Validation", "Enter join code");
+        return;
+      }
+
+      await joinHouseByCode(
+        joinCode,
+        auth.currentUser!.uid,
+        auth.currentUser!.email || "",
+      );
+
+      Alert.alert("Success", "Joined House");
+
+      setJoinCode("");
+
+      setJoinModalVisible(false);
+
+      loadHouses();
+    } catch (error: any) {
+      Alert.alert("Error", error.message);
     }
   };
 
@@ -142,6 +172,13 @@ export default function HousesScreen() {
           <Text style={styles.secondaryText}>Create House</Text>
         </TouchableOpacity>
 
+        <TouchableOpacity
+          style={styles.secondaryButton}
+          onPress={() => setJoinModalVisible(true)}
+        >
+          <Text style={styles.secondaryText}>Join House</Text>
+        </TouchableOpacity>
+
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
           <Text style={styles.logoutText}>Logout</Text>
         </TouchableOpacity>
@@ -166,6 +203,24 @@ export default function HousesScreen() {
             onPress={handleCreateHouse}
             loading={loading}
           />
+        </View>
+      </Modal>
+
+      <Modal
+        isVisible={joinModalVisible}
+        onBackdropPress={() => setJoinModalVisible(false)}
+      >
+        <View style={styles.modalCard}>
+          <Text style={styles.modalTitle}>Join House</Text>
+
+          <Input
+            label="Join Code"
+            value={joinCode}
+            onChangeText={setJoinCode}
+            placeholder="ABCD12"
+          />
+
+          <Button title="Join" onPress={handleJoinHouse} />
         </View>
       </Modal>
     </SafeAreaView>
