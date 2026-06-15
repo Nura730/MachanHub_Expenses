@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 import HousesScreen from "../screens/houses/HousesScreen";
 import HouseDetailsScreen from "../screens/house-details/HouseDetailsScreen";
+import AddExpenseScreen from "../screens/expenses/AddExpenseScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -21,6 +22,11 @@ export default function AppNavigator() {
       <Stack.Screen
         name="HouseDetails"
         component={HouseDetailsScreen}
+      />
+
+      <Stack.Screen
+        name="AddExpense"
+        component={AddExpenseScreen}
       />
     </Stack.Navigator>
   );
