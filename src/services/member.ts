@@ -9,6 +9,24 @@ import {
 
 import { db } from "./firebase";
 
+export const getMembers = async (
+  houseId: string
+) => {
+  const snapshot = await getDocs(
+    collection(
+      db,
+      "houses",
+      houseId,
+      "members"
+    )
+  );
+
+  return snapshot.docs.map(
+    (doc) => doc.data()
+  );
+};
+
+
 export const joinHouseByCode = async (
   code: string,
   uid: string,

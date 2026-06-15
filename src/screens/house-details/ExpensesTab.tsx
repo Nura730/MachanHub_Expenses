@@ -11,6 +11,8 @@ import { useNavigation } from "@react-navigation/native";
 
 import Colors from "../../constants/colors";
 import { getExpenses } from "../../services/expense";
+import { useFocusEffect } from "@react-navigation/native";
+
 
 type Props = {
   houseId: string;
@@ -21,9 +23,11 @@ export default function ExpensesTab({ houseId }: Props) {
 
   const navigation = useNavigation<any>();
 
-  useEffect(() => {
+  useFocusEffect(
+  React.useCallback(() => {
     loadExpenses();
-  }, []);
+  }, [])
+);
 
   const loadExpenses = async () => {
     const data = await getExpenses(houseId);
