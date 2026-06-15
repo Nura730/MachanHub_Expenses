@@ -1,7 +1,4 @@
-import React, {
-  useEffect,
-  useState,
-} from "react";
+import React, { useEffect, useState } from "react";
 
 import {
   View,
@@ -13,10 +10,7 @@ import {
   ScrollView,
 } from "react-native";
 
-import {
-  useRoute,
-  useNavigation,
-} from "@react-navigation/native";
+import { useRoute, useNavigation } from "@react-navigation/native";
 
 import { createExpense } from "../../services/expense";
 import { getMembers } from "../../services/member";
@@ -27,51 +21,51 @@ export default function AddExpenseScreen() {
 
   const { houseId } = route.params;
 
-  const [title, setTitle] =
-    useState("");
+  const [title, setTitle] = useState("");
 
-  const [amount, setAmount] =
-    useState("");
+  const [amount, setAmount] = useState("");
 
-  const [members, setMembers] =
-    useState<any[]>([]);
+  const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
 
-  const [payer, setPayer] =
-    useState("");
+  const [members, setMembers] = useState<any[]>([]);
+
+  const [payer, setPayer] = useState("");
 
   useEffect(() => {
     loadMembers();
   }, []);
 
   async function loadMembers() {
-    const data =
-      await getMembers(houseId);
+    const data = await getMembers(houseId);
 
     setMembers(data);
+
+    setSelectedMembers(data.map((member) => member.uid));
+  }
+
+  function toggleMember(uid: string) {
+    setSelectedMembers((prev) => {
+      if (prev.includes(uid)) {
+        return prev.filter((id) => id !== uid);
+      }
+
+      return [...prev, uid];
+    });
   }
 
   async function handleSave() {
     if (!title.trim()) {
-      Alert.alert(
-        "Error",
-        "Enter title"
-      );
+      Alert.alert("Error", "Enter title");
       return;
     }
 
     if (!amount.trim()) {
-      Alert.alert(
-        "Error",
-        "Enter amount"
-      );
+      Alert.alert("Error", "Enter amount");
       return;
     }
 
     if (!payer) {
-      Alert.alert(
-        "Error",
-        "Select payer"
-      );
+      Alert.alert("Error", "Select payer");
       return;
     }
 
@@ -80,30 +74,24 @@ export default function AddExpenseScreen() {
       title,
       amount: Number(amount),
       paidBy: payer,
-      splitBetween:
-        members.map(
-          (m) => m.uid
-        ),
+      splitBetween: selectedMembers,
       createdAt: Date.now(),
     });
 
-    Alert.alert(
-      "Success",
-      "Expense added"
-    );
+    if (selectedMembers.length === 0) {
+    Alert.alert("Error", "Select at least one participant");
+
+    return;
+  }
+
+    Alert.alert("Success", "Expense added");
 
     navigation.goBack();
   }
 
   return (
-    <ScrollView
-      contentContainerStyle={
-        styles.container
-      }
-    >
-      <Text style={styles.label}>
-        Title
-      </Text>
+    <ScrollView contentContainerStyle={styles.container}>
+      <Text style={styles.label}>Title</Text>
 
       <TextInput
         style={styles.input}
@@ -112,9 +100,7 @@ export default function AddExpenseScreen() {
         placeholder="Pizza"
       />
 
-      <Text style={styles.label}>
-        Amount
-      </Text>
+      <Text style={styles.label}>Amount</Text>
 
       <TextInput
         style={styles.input}
@@ -124,87 +110,89 @@ export default function AddExpenseScreen() {
         placeholder="500"
       />
 
-      <Text style={styles.label}>
-        Paid By
-      </Text>
+      <Text style={styles.label}>Paid By</Text>
+      {members.map((member) => (
+  <TouchableOpacity
+    key={member.uid}
+    style={[
+      styles.member,
+      payer === member.uid && styles.selectedMember,
+    ]}
+    onPress={() => setPayer(member.uid)}
+  >
+    <Text>
+      {payer === member.uid ? "💰 " : "⬜ "}
+      {member.email}
+    </Text>
+  </TouchableOpacity>
+))}
 
-      {members.map(
-        (member) => (
-          <TouchableOpacity
-            key={member.uid}
-            style={[
-              styles.member,
-              payer ===
-                member.uid && {
-                borderWidth: 2,
-              },
-            ]}
-            onPress={() =>
-              setPayer(
-                member.uid
-              )
-            }
-          >
-            <Text>
-              {member.email}
-            </Text>
-          </TouchableOpacity>
-        )
-      )}
+      <Text style={styles.label}>Participants</Text>
 
-      <TouchableOpacity
-        style={styles.button}
-        onPress={handleSave}
-      >
-        <Text
-          style={
-            styles.buttonText
-          }
+      {members.map((member) => (
+        <TouchableOpacity
+          key={member.uid}
+          style={[
+            styles.member,
+            selectedMembers.includes(member.uid) && styles.selectedMember,
+          ]}
+          onPress={() => toggleMember(member.uid)}
         >
-          Save Expense
-        </Text>
+          <Text>
+            {selectedMembers.includes(member.uid) ? "✅ " : "⬜ "}
+            {member.email}
+          </Text>
+        </TouchableOpacity>
+      ))}
+
+      <TouchableOpacity style={styles.button} onPress={handleSave}>
+        <Text style={styles.buttonText}>Save Expense</Text>
       </TouchableOpacity>
     </ScrollView>
   );
+
+  
 }
 
-const styles =
-  StyleSheet.create({
-    container: {
-      padding: 20,
-    },
+const styles = StyleSheet.create({
+  container: {
+    padding: 20,
+  },
 
-    label: {
-      fontWeight: "700",
-      marginTop: 15,
-      marginBottom: 8,
-    },
+  label: {
+    fontWeight: "700",
+    marginTop: 15,
+    marginBottom: 8,
+  },
 
-    input: {
-      borderWidth: 1,
-      borderColor: "#ddd",
-      borderRadius: 10,
-      padding: 12,
-    },
+  input: {
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 10,
+    padding: 12,
+  },
 
-    member: {
-      padding: 14,
-      borderRadius: 10,
-      borderWidth: 1,
-      marginBottom: 10,
-    },
+  member: {
+    padding: 14,
+    borderRadius: 10,
+    borderWidth: 1,
+    marginBottom: 10,
+  },
 
-    button: {
-      backgroundColor:
-        "#4CAF50",
-      marginTop: 25,
-      padding: 15,
-      borderRadius: 10,
-      alignItems: "center",
-    },
+  button: {
+    backgroundColor: "#4CAF50",
+    marginTop: 25,
+    padding: 15,
+    borderRadius: 10,
+    alignItems: "center",
+  },
 
-    buttonText: {
-      color: "#fff",
-      fontWeight: "700",
-    },
-  });
+  buttonText: {
+    color: "#fff",
+    fontWeight: "700",
+  },
+  selectedMember: {
+    borderWidth: 2,
+    borderColor: "#4CAF50",
+  },
+});
