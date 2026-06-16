@@ -1,7 +1,4 @@
-import React, {
-  useState,
-} from "react";
-
+import React, { useState } from "react";
 import {
   FlatList,
   Text,
@@ -9,22 +6,27 @@ import {
   StyleSheet,
 } from "react-native";
 
-import {
-  useFocusEffect,
-} from "@react-navigation/native";
+import { useFocusEffect } from "@react-navigation/native";
 
 import Colors from "../../constants/colors";
-
 import { getMembers } from "../../services/member";
 import { calculateBalances } from "../../services/balance";
-
-import {
-  calculateSettlements,
-} from "../../utils/calculateSettlements";
+import { calculateSettlements } from "../../utils/calculateSettlements";
 
 type Props = {
   houseId: string;
 };
+
+function getDisplayName(email: string) {
+  if (!email) return "Unknown";
+
+  const name = email.split("@")[0];
+
+  return (
+    name.charAt(0).toUpperCase() +
+    name.slice(1)
+  );
+}
 
 export default function SettlementTab({
   houseId,
@@ -59,7 +61,9 @@ export default function SettlementTab({
 
     members.forEach((member) => {
       map[member.uid] =
-        member.email;
+        getDisplayName(
+          member.email
+        );
     });
 
     setMemberMap(map);
@@ -80,35 +84,23 @@ export default function SettlementTab({
         index.toString()
       }
       ListEmptyComponent={() => (
-        <Text
-          style={styles.empty}
-        >
+        <Text style={styles.empty}>
           No settlements needed 🎉
         </Text>
       )}
       renderItem={({ item }) => (
         <View style={styles.card}>
-          <Text
-            style={styles.text}
-          >
-            💸 Pay
+          <Text style={styles.from}>
+            💸 {memberMap[item.from]}
           </Text>
 
-          <Text
-            style={styles.name}
-          >
-            {
-              memberMap[item.to]
-            }
+          <Text style={styles.middle}>
+            Pay ₹
+            {item.amount.toFixed(2)}
           </Text>
 
-          <Text
-            style={styles.amount}
-          >
-            ₹
-            {item.amount.toFixed(
-              2
-            )}
+          <Text style={styles.to}>
+            ➜ To {memberMap[item.to]}
           </Text>
         </View>
       )}
@@ -116,45 +108,44 @@ export default function SettlementTab({
   );
 }
 
-const styles =
-  StyleSheet.create({
-    list: {
-      flex: 1,
-      padding: 16,
-      backgroundColor:
-        Colors.background,
-    },
+const styles = StyleSheet.create({
+  list: {
+    flex: 1,
+    padding: 16,
+    backgroundColor:
+      Colors.background,
+  },
 
-    card: {
-      backgroundColor:
-        Colors.surface,
-      padding: 18,
-      borderRadius: 14,
-      marginBottom: 12,
-    },
+  card: {
+    backgroundColor:
+      Colors.surface,
+    padding: 20,
+    borderRadius: 16,
+    marginBottom: 14,
+  },
 
-    text: {
-      color: "#ef4444",
-      fontWeight: "700",
-    },
+  from: {
+    color: "#ef4444",
+    fontSize: 18,
+    fontWeight: "700",
+  },
 
-    name: {
-      color: Colors.text,
-      fontSize: 18,
-      marginTop: 6,
-    },
+  middle: {
+    color: Colors.text,
+    fontSize: 24,
+    fontWeight: "700",
+    marginVertical: 12,
+  },
 
-    amount: {
-      color: "#ef4444",
-      fontSize: 24,
-      fontWeight: "700",
-      marginTop: 8,
-    },
+  to: {
+    color: "#22c55e",
+    fontSize: 16,
+    fontWeight: "600",
+  },
 
-    empty: {
-      textAlign: "center",
-      marginTop: 40,
-      color:
-        Colors.textSecondary,
-    },
-  });
+  empty: {
+    textAlign: "center",
+    marginTop: 40,
+    color: Colors.textSecondary,
+  },
+});
