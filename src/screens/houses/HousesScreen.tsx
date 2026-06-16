@@ -161,7 +161,34 @@ export default function HousesScreen({ navigation }: any) {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.welcome}>Welcome Back {userName} 👋</Text>
+        <View
+  style={{
+    flexDirection: "row",
+    justifyContent:
+      "space-between",
+    alignItems: "center",
+  }}
+>
+  <Text style={styles.welcome}>
+    Welcome Back {userName} 👋
+  </Text>
+
+  <TouchableOpacity
+    onPress={() =>
+      navigation.navigate(
+        "Profile"
+      )
+    }
+  >
+    <Text
+      style={{
+        fontSize: 24,
+      }}
+    >
+      👤
+    </Text>
+  </TouchableOpacity>
+</View>
 
         <Text style={styles.email}>Manage your shared expenses</Text>
       </View>
@@ -182,7 +209,14 @@ export default function HousesScreen({ navigation }: any) {
         renderItem={renderHouse}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>No houses yet</Text>
+            <Text style={styles.emptyText}>
+  🏠 No Houses Yet
+</Text>
+
+<Text style={styles.emptySubText}>
+  Create or join a house
+  to start tracking expenses.
+</Text>
 
             <Text style={styles.emptySubText}>Create your first house</Text>
           </View>

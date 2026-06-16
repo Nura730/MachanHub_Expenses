@@ -77,26 +77,21 @@ export default function HistoryTab({
       }
       ListEmptyComponent={() => (
         <Text style={styles.empty}>
-          No settlement history
-        </Text>
+  📜 No payment history yet
+
+  Completed settlements
+  will appear here.
+</Text>
       )}
       renderItem={({ item }) => (
         <View style={styles.card}>
-          <Text
-            style={styles.title}
-          >
-            {
-              memberMap[
-                item.from
-              ]
-            }{" "}
-            paid{" "}
-            {
-              memberMap[
-                item.to
-              ]
-            }
-          </Text>
+        <Text style={styles.status}>
+  ✅ Payment Completed
+</Text>
+
+<Text style={styles.title}>
+  {memberMap[item.from]} → {memberMap[item.to]}
+</Text>
 
           <Text
             style={styles.amount}
@@ -159,4 +154,9 @@ const styles =
       color:
         Colors.textSecondary,
     },
+    status: {
+  color: Colors.success,
+  fontWeight: "700",
+  marginBottom: 8,
+},
   });

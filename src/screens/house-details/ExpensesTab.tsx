@@ -81,7 +81,18 @@ export default function ExpensesTab({ houseId }: Props) {
     <View style={{ flex: 1 }}>
       {expenses.length === 0 ? (
         <View style={styles.empty}>
-          <Text style={styles.title}>No expenses yet</Text>
+          <>
+            <Text style={styles.title}>💸 No Expenses Yet</Text>
+
+            <Text
+              style={{
+                color: Colors.textSecondary,
+                marginTop: 8,
+              }}
+            >
+              Tap + to add your first expense.
+            </Text>
+          </>
         </View>
       ) : (
         <FlatList
@@ -90,7 +101,6 @@ export default function ExpensesTab({ houseId }: Props) {
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => {
             const participants = item.splitBetween ?? [];
-            console.log("EXPENSE", item);
 
             <View
               style={{
@@ -101,19 +111,28 @@ export default function ExpensesTab({ houseId }: Props) {
 
             return (
               <View style={styles.card}>
-                <Text
-  style={{
-    color: "#22c55e",
-    marginBottom: 6,
-    fontWeight: "600",
-  }}
->
-  {item.category || "📦 Other"}
-</Text>
+                <View
+                  style={{
+                    alignSelf: "flex-start",
+                    backgroundColor: Colors.surfaceLight,
+                    paddingHorizontal: 10,
+                    paddingVertical: 4,
+                    borderRadius: 20,
+                    marginBottom: 10,
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: Colors.primary,
+                      fontWeight: "700",
+                      fontSize: 12,
+                    }}
+                  >
+                    {item.category || "Other"}
+                  </Text>
+                </View>
 
-<Text style={styles.name}>
-  {item.title}
-</Text>
+                <Text style={styles.name}>{item.title}</Text>
 
                 <Text style={styles.amount}>₹{item.amount}</Text>
 
@@ -200,9 +219,11 @@ const styles = StyleSheet.create({
 
   card: {
     backgroundColor: Colors.surface,
-    padding: 16,
-    borderRadius: 16,
-    marginBottom: 12,
+    padding: 18,
+    borderRadius: 20,
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
 
   name: {
@@ -212,14 +233,17 @@ const styles = StyleSheet.create({
   },
 
   amount: {
-    color: Colors.textSecondary,
-    marginTop: 6,
+    color: Colors.primary,
+    marginTop: 8,
+    fontSize: 24,
+    fontWeight: "700",
   },
 
   fab: {
     position: "absolute",
-    right: 20,
-    bottom: 20,
+    right: 24,
+    bottom: 24,
+    elevation: 8,
     width: 60,
     height: 60,
     borderRadius: 30,

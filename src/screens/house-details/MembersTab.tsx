@@ -1,7 +1,4 @@
-import React, {
-  useEffect,
-  useState,
-} from "react";
+import React, { useEffect, useState } from "react";
 
 import {
   View,
@@ -13,8 +10,8 @@ import {
 import Colors from "../../constants/colors";
 
 import {
-  getHouseMembers,
-} from "../../services/houseMembers";
+  getMembers,
+} from "../../services/member";
 
 type Props = {
   houseId: string;
@@ -33,9 +30,9 @@ export default function MembersTab({
   const loadMembers =
     async () => {
       const data =
-        await getHouseMembers(
-          houseId
-        );
+  await getMembers(
+    houseId
+  );
 
       setMembers(data);
     };
@@ -47,10 +44,26 @@ export default function MembersTab({
         keyExtractor={(item) =>
           item.uid
         }
-        renderItem={({ item }) => (
+        ListEmptyComponent={() => (
           <View
-            style={styles.card}
+            style={styles.emptyContainer}
           >
+            <Text
+              style={styles.emptyTitle}
+            >
+              👥 No Members Yet
+            </Text>
+
+            <Text
+              style={styles.emptySubtitle}
+            >
+              Invite friends using
+              the house code.
+            </Text>
+          </View>
+        )}
+        renderItem={({ item }) => (
+          <View style={styles.card}>
             <Text
               style={styles.name}
             >
@@ -81,9 +94,12 @@ const styles =
     card: {
       backgroundColor:
         Colors.surface,
-      padding: 16,
-      borderRadius: 16,
+      padding: 18,
+      borderRadius: 18,
       marginBottom: 12,
+      borderWidth: 1,
+      borderColor:
+        Colors.border,
     },
 
     name: {
@@ -95,6 +111,24 @@ const styles =
     email: {
       color:
         Colors.textSecondary,
-      marginTop: 4,
+      marginTop: 6,
+    },
+
+    emptyContainer: {
+      alignItems: "center",
+      marginTop: 60,
+    },
+
+    emptyTitle: {
+      color: Colors.text,
+      fontSize: 18,
+      fontWeight: "700",
+    },
+
+    emptySubtitle: {
+      color:
+        Colors.textSecondary,
+      marginTop: 8,
+      textAlign: "center",
     },
   });

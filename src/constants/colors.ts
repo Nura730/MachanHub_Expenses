@@ -1,13 +1,13 @@
 const Colors = {
   background: "#0F1115",
-  surface: "#181C23",
+  surface: "#1A1F28",
   surfaceLight: "#222834",
 
   primary: "#22C55E",
   primaryDark: "#16A34A",
 
   text: "#FFFFFF",
-  textSecondary: "#A1A1AA",
+  textSecondary: "#9CA3AF",
 
   border: "#2E3440",
 
