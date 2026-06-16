@@ -12,7 +12,7 @@ import { useNavigation } from "@react-navigation/native";
 import Colors from "../../constants/colors";
 import { getExpenses } from "../../services/expense";
 import { useFocusEffect } from "@react-navigation/native";
-
+import { getMembers } from "../../services/member";
 
 type Props = {
   houseId: string;
@@ -23,16 +23,31 @@ export default function ExpensesTab({ houseId }: Props) {
 
   const navigation = useNavigation<any>();
 
+  const [memberMap, setMemberMap] = useState<Record<string, string>>({});
+
   useFocusEffect(
-  React.useCallback(() => {
-    loadExpenses();
-  }, [])
-);
+    React.useCallback(() => {
+      loadExpenses();
+      loadMembers();
+    }, []),
+  );
 
   const loadExpenses = async () => {
     const data = await getExpenses(houseId);
     setExpenses(data);
   };
+
+  async function loadMembers() {
+    const members = await getMembers(houseId);
+
+    const map: Record<string, string> = {};
+
+    members.forEach((member) => {
+      map[member.uid] = member.email;
+    });
+
+    setMemberMap(map);
+  }
 
   return (
     <View style={{ flex: 1 }}>
@@ -45,12 +60,30 @@ export default function ExpensesTab({ houseId }: Props) {
           style={styles.container}
           data={expenses}
           keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <View style={styles.card}>
-              <Text style={styles.name}>{item.title}</Text>
-              <Text style={styles.amount}>₹{item.amount}</Text>
-            </View>
-          )}
+          renderItem={({ item }) => {
+            const participants = item.splitBetween ?? [];
+            console.log("EXPENSE", item);
+
+            return (
+              <View style={styles.card}>
+                <Text style={styles.name}>{item.title}</Text>
+
+                <Text style={styles.amount}>₹{item.amount}</Text>
+
+                <Text style={styles.meta}>
+                  Paid by {memberMap[item.paidBy] ?? "Unknown"}
+                </Text>
+
+                <Text style={styles.meta}>
+                  Split among {participants.length} members
+                </Text>
+
+                <Text style={styles.date}>
+                  {new Date(item.createdAt).toLocaleDateString()}
+                </Text>
+              </View>
+            );
+          }}
         />
       )}
 
@@ -122,5 +155,15 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 30,
     fontWeight: "700",
+  },
+  meta: {
+    color: Colors.textSecondary,
+    marginTop: 6,
+  },
+
+  date: {
+    color: Colors.textSecondary,
+    marginTop: 8,
+    fontSize: 12,
   },
 });
