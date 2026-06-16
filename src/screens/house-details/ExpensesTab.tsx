@@ -13,6 +13,9 @@ import Colors from "../../constants/colors";
 import { getExpenses } from "../../services/expense";
 import { useFocusEffect } from "@react-navigation/native";
 import { getMembers } from "../../services/member";
+import { Alert } from "react-native";
+
+import { deleteExpense } from "../../services/expense";
 
 type Props = {
   houseId: string;
@@ -43,12 +46,35 @@ export default function ExpensesTab({ houseId }: Props) {
     const map: Record<string, string> = {};
 
     members.forEach((member) => {
-      map[member.uid] =
-  member.name ||
-  member.email;
+      map[member.uid] = member.name || member.email;
     });
 
     setMemberMap(map);
+  }
+
+  function handleEdit(expense: any) {
+    navigation.navigate("AddExpense", {
+      houseId,
+      expense,
+    });
+  }
+
+  function handleDelete(expense: any) {
+    Alert.alert("Delete Expense", `Delete "${expense.title}"?`, [
+      {
+        text: "Cancel",
+        style: "cancel",
+      },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: async () => {
+          await deleteExpense(houseId, expense.id);
+
+          loadExpenses();
+        },
+      },
+    ]);
   }
 
   return (
@@ -65,6 +91,13 @@ export default function ExpensesTab({ houseId }: Props) {
           renderItem={({ item }) => {
             const participants = item.splitBetween ?? [];
             console.log("EXPENSE", item);
+
+            <View
+              style={{
+                flexDirection: "row",
+                marginTop: 12,
+              }}
+            ></View>;
 
             return (
               <View style={styles.card}>
@@ -83,6 +116,36 @@ export default function ExpensesTab({ houseId }: Props) {
                 <Text style={styles.date}>
                   {new Date(item.createdAt).toLocaleDateString()}
                 </Text>
+
+                <View
+                  style={{
+                    flexDirection: "row",
+                    marginTop: 12,
+                  }}
+                >
+                  <TouchableOpacity onPress={() => handleEdit(item)}>
+                    <Text
+                      style={{
+                        color: "#3b82f6",
+                        marginRight: 20,
+                        fontWeight: "600",
+                      }}
+                    >
+                      ✏️ Edit
+                    </Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity onPress={() => handleDelete(item)}>
+                    <Text
+                      style={{
+                        color: "#ef4444",
+                        fontWeight: "600",
+                      }}
+                    >
+                      🗑️ Delete
+                    </Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             );
           }}

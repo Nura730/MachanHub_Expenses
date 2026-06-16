@@ -14,22 +14,48 @@ import { useRoute, useNavigation } from "@react-navigation/native";
 
 import { createExpense } from "../../services/expense";
 import { getMembers } from "../../services/member";
+import {
+  updateExpense,
+} from "../../services/expense";
+
 
 export default function AddExpenseScreen() {
   const route = useRoute<any>();
   const navigation = useNavigation<any>();
 
-  const { houseId } = route.params;
+  const {
+  houseId,
+  expense,
+} = route.params;
 
-  const [title, setTitle] = useState("");
+  const [title, setTitle] =
+  useState(
+    expense?.title ?? ""
+  );
 
-  const [amount, setAmount] = useState("");
+const [amount, setAmount] =
+  useState(
+    expense
+      ? String(
+          expense.amount
+        )
+      : ""
+  );
 
-  const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
+const [payer, setPayer] =
+  useState(
+    expense?.paidBy ?? ""
+  );
+
+const [
+  selectedMembers,
+  setSelectedMembers,
+] = useState<string[]>(
+  expense?.splitBetween ??
+    []
+);
 
   const [members, setMembers] = useState<any[]>([]);
-
-  const [payer, setPayer] = useState("");
 
   useEffect(() => {
     loadMembers();
@@ -40,7 +66,13 @@ export default function AddExpenseScreen() {
 
     setMembers(data);
 
-    setSelectedMembers(data.map((member) => member.uid));
+    if (!expense) {
+  setSelectedMembers(
+    data.map(
+      (member) => member.uid
+    )
+  );
+}
   }
 
   function toggleMember(uid: string) {
@@ -54,40 +86,60 @@ export default function AddExpenseScreen() {
   }
 
   async function handleSave() {
-    if (!title.trim()) {
-      Alert.alert("Error", "Enter title");
-      return;
-    }
-
-    if (!amount.trim()) {
-      Alert.alert("Error", "Enter amount");
-      return;
-    }
-
-    if (!payer) {
-      Alert.alert("Error", "Select payer");
-      return;
-    }
-
-    await createExpense({
-      houseId,
-      title,
-      amount: Number(amount),
-      paidBy: payer,
-      splitBetween: selectedMembers,
-      createdAt: Date.now(),
-    });
-
-    if (selectedMembers.length === 0) {
-    Alert.alert("Error", "Select at least one participant");
-
+  if (!title.trim()) {
+    Alert.alert(
+      "Error",
+      "Enter title"
+    );
     return;
   }
 
-    Alert.alert("Success", "Expense added");
-
-    navigation.goBack();
+  if (
+    selectedMembers.length === 0
+  ) {
+    Alert.alert(
+      "Error",
+      "Select at least one participant"
+    );
+    return;
   }
+
+  if (expense) {
+    await updateExpense({
+      ...expense,
+      title,
+      amount:
+        Number(amount),
+      paidBy: payer,
+      splitBetween:
+        selectedMembers,
+    });
+
+    Alert.alert(
+      "Success",
+      "Expense updated"
+    );
+  } else {
+    await createExpense({
+      houseId,
+      title,
+      amount:
+        Number(amount),
+      paidBy: payer,
+      splitBetween:
+        selectedMembers,
+      createdAt:
+        Date.now(),
+    });
+
+    Alert.alert(
+      "Success",
+      "Expense added"
+    );
+  }
+
+  navigation.goBack();
+}
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
