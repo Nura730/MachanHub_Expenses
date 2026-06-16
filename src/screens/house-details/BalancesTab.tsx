@@ -91,23 +91,39 @@ async function loadMembers() {
         data={balances}
         keyExtractor={(item) => item.uid}
         renderItem={({ item }) => (
-          <View style={styles.card}>
-            <Text>
-  {memberMap[item.uid] ??
-    item.uid}
-</Text>
+  <View style={styles.card}>
+    <Text
+      style={{
+        color: Colors.text,
+        fontSize: 16,
+        fontWeight: "600",
+      }}
+    >
+      {memberMap[item.uid] ??
+        item.uid}
+    </Text>
 
-            <Text>
-  {item.amount < 0
-    ? `Owes ₹${Math.abs(
-        item.amount
-      ).toFixed(2)}`
-    : `Gets ₹${item.amount.toFixed(
-        2
-      )}`}
-</Text>
-          </View>
-        )}
+    <Text
+      style={{
+        marginTop: 8,
+        fontSize: 18,
+        fontWeight: "700",
+        color:
+          item.amount < 0
+            ? "#ef4444"
+            : "#22c55e",
+      }}
+    >
+      {item.amount < 0
+        ? `💸 Need to Pay ₹${Math.abs(
+            item.amount
+          ).toFixed(2)}`
+        : `💰 Will Receive ₹${item.amount.toFixed(
+            2
+          )}`}
+    </Text>
+  </View>
+)}
       />
     )
   );
@@ -134,11 +150,9 @@ const styles = StyleSheet.create({
   },
 
   card: {
-    backgroundColor: Colors.surface,
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 12,
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
+  backgroundColor: Colors.surface,
+  padding: 18,
+  borderRadius: 14,
+  marginBottom: 12,
+},
 });
