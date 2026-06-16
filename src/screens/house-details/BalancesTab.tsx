@@ -19,31 +19,26 @@ export default function BalancesTab({ houseId }: Props) {
 
   const [loading, setLoading] = useState(true);
 
-  const [memberMap, setMemberMap] =
-  useState<Record<string, string>>({});
+  const [memberMap, setMemberMap] = useState<Record<string, string>>({});
 
   useFocusEffect(
-  React.useCallback(() => {
-    loadBalances();
-    loadMembers();
-  }, [])
-);
-async function loadMembers() {
-  const members =
-    await getMembers(houseId);
+    React.useCallback(() => {
+      loadBalances();
+      loadMembers();
+    }, []),
+  );
+  async function loadMembers() {
+    const members = await getMembers(houseId);
 
-  const map: Record<
-    string,
-    string
-  > = {};
+    const map: Record<string, string> = {};
 
-  members.forEach((member) => {
-    map[member.uid] =
-      member.email;
-  });
-
-  setMemberMap(map);
-}
+    members.forEach((member) => {
+      map[member.uid] = member.name || member.email;
+    });
+    console.log("MEMBERS", members);
+    console.log("MAP", map);
+    setMemberMap(map);
+  }
   async function loadBalances() {
     setLoading(true);
 
@@ -91,39 +86,31 @@ async function loadMembers() {
         data={balances}
         keyExtractor={(item) => item.uid}
         renderItem={({ item }) => (
-  <View style={styles.card}>
-    <Text
-      style={{
-        color: Colors.text,
-        fontSize: 16,
-        fontWeight: "600",
-      }}
-    >
-      {memberMap[item.uid] ??
-        item.uid}
-    </Text>
+          <View style={styles.card}>
+            <Text
+              style={{
+                color: Colors.text,
+                fontSize: 16,
+                fontWeight: "600",
+              }}
+            >
+              {memberMap[item.uid] ?? item.uid}
+            </Text>
 
-    <Text
-      style={{
-        marginTop: 8,
-        fontSize: 18,
-        fontWeight: "700",
-        color:
-          item.amount < 0
-            ? "#ef4444"
-            : "#22c55e",
-      }}
-    >
-      {item.amount < 0
-        ? `💸 Need to Pay ₹${Math.abs(
-            item.amount
-          ).toFixed(2)}`
-        : `💰 Will Receive ₹${item.amount.toFixed(
-            2
-          )}`}
-    </Text>
-  </View>
-)}
+            <Text
+              style={{
+                marginTop: 8,
+                fontSize: 18,
+                fontWeight: "700",
+                color: item.amount < 0 ? "#ef4444" : "#22c55e",
+              }}
+            >
+              {item.amount < 0
+                ? `💸 Need to Pay ₹${Math.abs(item.amount).toFixed(2)}`
+                : `💰 Will Receive ₹${item.amount.toFixed(2)}`}
+            </Text>
+          </View>
+        )}
       />
     )
   );
@@ -150,9 +137,9 @@ const styles = StyleSheet.create({
   },
 
   card: {
-  backgroundColor: Colors.surface,
-  padding: 18,
-  borderRadius: 14,
-  marginBottom: 12,
-},
+    backgroundColor: Colors.surface,
+    padding: 18,
+    borderRadius: 14,
+    marginBottom: 12,
+  },
 });

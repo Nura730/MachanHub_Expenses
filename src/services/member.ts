@@ -5,6 +5,7 @@ import {
   getDocs,
   doc,
   setDoc,
+  getDoc,
 } from "firebase/firestore";
 
 import { db } from "./firebase";
@@ -26,7 +27,6 @@ export const getMembers = async (
   );
 };
 
-
 export const joinHouseByCode = async (
   code: string,
   uid: string,
@@ -45,6 +45,12 @@ export const joinHouseByCode = async (
 
   const houseDoc = snapshot.docs[0];
 
+  const userSnapshot = await getDoc(
+    doc(db, "users", uid)
+  );
+
+  const userData = userSnapshot.data();
+
   await setDoc(
     doc(
       db,
@@ -56,6 +62,7 @@ export const joinHouseByCode = async (
     {
       uid,
       email,
+      name: userData?.name || "",
       joinedAt: Date.now(),
     }
   );

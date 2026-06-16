@@ -43,7 +43,9 @@ export default function ExpensesTab({ houseId }: Props) {
     const map: Record<string, string> = {};
 
     members.forEach((member) => {
-      map[member.uid] = member.email;
+      map[member.uid] =
+  member.name ||
+  member.email;
     });
 
     setMemberMap(map);
