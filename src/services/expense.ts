@@ -60,11 +60,12 @@ export const updateExpense = async (
       expense.id
     ),
     {
-      title: expense.title,
-      amount: expense.amount,
-      paidBy: expense.paidBy,
-      splitBetween: expense.splitBetween,
-    }
+  title: expense.title,
+  amount: expense.amount,
+  paidBy: expense.paidBy,
+  splitBetween: expense.splitBetween,
+  category: expense.category,
+}
   );
 };
 

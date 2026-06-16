@@ -17,7 +17,7 @@ import { getMembers } from "../../services/member";
 import {
   updateExpense,
 } from "../../services/expense";
-
+import { EXPENSE_CATEGORIES } from "../../constants/categories";
 
 export default function AddExpenseScreen() {
   const route = useRoute<any>();
@@ -46,7 +46,11 @@ const [payer, setPayer] =
   useState(
     expense?.paidBy ?? ""
   );
-
+const [category, setCategory] =
+  useState(
+    expense?.category ??
+      "📦 Other"
+  );
 const [
   selectedMembers,
   setSelectedMembers,
@@ -106,14 +110,13 @@ const [
 
   if (expense) {
     await updateExpense({
-      ...expense,
-      title,
-      amount:
-        Number(amount),
-      paidBy: payer,
-      splitBetween:
-        selectedMembers,
-    });
+  ...expense,
+  title,
+  amount: Number(amount),
+  paidBy: payer,
+  splitBetween: selectedMembers,
+  category,
+});
 
     Alert.alert(
       "Success",
@@ -121,16 +124,14 @@ const [
     );
   } else {
     await createExpense({
-      houseId,
-      title,
-      amount:
-        Number(amount),
-      paidBy: payer,
-      splitBetween:
-        selectedMembers,
-      createdAt:
-        Date.now(),
-    });
+  houseId,
+  title,
+  amount: Number(amount),
+  paidBy: payer,
+  splitBetween: selectedMembers,
+  category,
+  createdAt: Date.now(),
+});
 
     Alert.alert(
       "Success",
@@ -161,6 +162,28 @@ const [
         onChangeText={setAmount}
         placeholder="500"
       />
+
+      <Text style={styles.label}>
+  Category
+</Text>
+
+{EXPENSE_CATEGORIES.map(
+  (item) => (
+    <TouchableOpacity
+      key={item}
+      style={[
+        styles.member,
+        category === item &&
+          styles.selectedMember,
+      ]}
+      onPress={() =>
+        setCategory(item)
+      }
+    >
+      <Text>{item}</Text>
+    </TouchableOpacity>
+  )
+)}
 
       <Text style={styles.label}>Paid By</Text>
       {members.map((member) => (

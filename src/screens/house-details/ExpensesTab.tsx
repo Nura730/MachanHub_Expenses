@@ -101,7 +101,19 @@ export default function ExpensesTab({ houseId }: Props) {
 
             return (
               <View style={styles.card}>
-                <Text style={styles.name}>{item.title}</Text>
+                <Text
+  style={{
+    color: "#22c55e",
+    marginBottom: 6,
+    fontWeight: "600",
+  }}
+>
+  {item.category || "📦 Other"}
+</Text>
+
+<Text style={styles.name}>
+  {item.title}
+</Text>
 
                 <Text style={styles.amount}>₹{item.amount}</Text>
 
