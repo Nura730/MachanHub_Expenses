@@ -1,5 +1,12 @@
 import React, { useState } from "react";
-import { FlatList, Text, View, StyleSheet } from "react-native";
+import {
+  FlatList,
+  Text,
+  View,
+  StyleSheet,
+  TouchableOpacity,
+  Alert,
+} from "react-native";
 
 import { useFocusEffect } from "@react-navigation/native";
 
@@ -7,8 +14,6 @@ import Colors from "../../constants/colors";
 import { getMembers } from "../../services/member";
 import { calculateBalances } from "../../services/balance";
 import { calculateSettlements } from "../../utils/calculateSettlements";
-import { TouchableOpacity, Alert } from "react-native";
-
 import { createSettlement } from "../../services/settlement";
 
 type Props = {
@@ -20,68 +25,150 @@ function getDisplayName(email: string) {
 
   const name = email.split("@")[0];
 
-  return name.charAt(0).toUpperCase() + name.slice(1);
+  return (
+    name.charAt(0).toUpperCase() +
+    name.slice(1)
+  );
 }
 
-export default function SettlementTab({ houseId }: Props) {
-  const [settlements, setSettlements] = useState<any[]>([]);
+export default function SettlementTab({
+  houseId,
+}: Props) {
+  const [settlements, setSettlements] =
+    useState<any[]>([]);
 
-  const [memberMap, setMemberMap] = useState<Record<string, string>>({});
+  const [memberMap, setMemberMap] =
+    useState<Record<string, string>>(
+      {}
+    );
 
   useFocusEffect(
     React.useCallback(() => {
       loadData();
-    }, []),
+    }, [])
   );
 
   async function loadData() {
-    const balances = await calculateBalances(houseId);
+    const balances =
+      await calculateBalances(
+        houseId
+      );
 
-    const members = await getMembers(houseId);
+    const members =
+      await getMembers(houseId);
 
-    const map: Record<string, string> = {};
+    const map: Record<
+      string,
+      string
+    > = {};
 
     members.forEach((member) => {
-      map[member.uid] = member.name || getDisplayName(member.email);
+      map[member.uid] =
+        member.name ||
+        getDisplayName(
+          member.email
+        );
     });
 
     setMemberMap(map);
 
-    const result = calculateSettlements(balances);
+    const result =
+      calculateSettlements(
+        balances
+      );
 
     setSettlements(result);
   }
 
-  async function markPaid(item: any) {
+  async function savePayment(
+    item: any
+  ) {
     try {
-      await createSettlement(houseId, item.from, item.to, item.amount);
+      await createSettlement(
+        houseId,
+        item.from,
+        item.to,
+        item.amount
+      );
 
-      Alert.alert("Success", "Settlement saved");
+      Alert.alert(
+        "Success",
+        "Settlement saved"
+      );
+
+      // refresh settlements
+      await loadData();
     } catch {
-      Alert.alert("Error", "Could not save settlement");
+      Alert.alert(
+        "Error",
+        "Could not save settlement"
+      );
     }
+  }
+
+  function markPaid(item: any) {
+    Alert.alert(
+      "Confirm Payment",
+      `Mark ₹${item.amount.toFixed(
+        2
+      )} as paid?`,
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Paid",
+          onPress: () =>
+            savePayment(item),
+        },
+      ]
+    );
   }
 
   return (
     <FlatList
       style={styles.list}
       data={settlements}
-      keyExtractor={(_, index) => index.toString()}
+      keyExtractor={(_, index) =>
+        index.toString()
+      }
       ListEmptyComponent={() => (
-        <Text style={styles.empty}>No settlements needed 🎉</Text>
+        <Text style={styles.empty}>
+          No settlements needed 🎉
+        </Text>
       )}
       renderItem={({ item }) => (
         <View style={styles.card}>
-          <Text style={styles.from}>💸 {memberMap[item.from]}</Text>
+          <Text style={styles.from}>
+            💸 {memberMap[item.from]}
+          </Text>
 
-          <Text style={styles.middle}>Pay ₹{item.amount.toFixed(2)}</Text>
+          <Text style={styles.middle}>
+            Pay ₹
+            {item.amount.toFixed(
+              2
+            )}
+          </Text>
 
-          <Text style={styles.to}>➜ To {memberMap[item.to]}</Text>
+          <Text style={styles.to}>
+            ➜ To{" "}
+            {memberMap[item.to]}
+          </Text>
+
           <TouchableOpacity
             style={styles.button}
-            onPress={() => markPaid(item)}
+            onPress={() =>
+              markPaid(item)
+            }
           >
-            <Text style={styles.buttonText}>✓ Mark Paid</Text>
+            <Text
+              style={
+                styles.buttonText
+              }
+            >
+              ✓ Mark Paid
+            </Text>
           </TouchableOpacity>
         </View>
       )}
@@ -89,54 +176,60 @@ export default function SettlementTab({ houseId }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  list: {
-    flex: 1,
-    padding: 16,
-    backgroundColor: Colors.background,
-  },
+const styles =
+  StyleSheet.create({
+    list: {
+      flex: 1,
+      padding: 16,
+      backgroundColor:
+        Colors.background,
+    },
 
-  card: {
-    backgroundColor: Colors.surface,
-    padding: 20,
-    borderRadius: 16,
-    marginBottom: 14,
-  },
+    card: {
+      backgroundColor:
+        Colors.surface,
+      padding: 20,
+      borderRadius: 16,
+      marginBottom: 14,
+    },
 
-  from: {
-    color: "#ef4444",
-    fontSize: 18,
-    fontWeight: "700",
-  },
+    from: {
+      color: "#ef4444",
+      fontSize: 18,
+      fontWeight: "700",
+    },
 
-  middle: {
-    color: Colors.text,
-    fontSize: 24,
-    fontWeight: "700",
-    marginVertical: 12,
-  },
+    middle: {
+      color: Colors.text,
+      fontSize: 24,
+      fontWeight: "700",
+      marginVertical: 12,
+    },
 
-  to: {
-    color: "#22c55e",
-    fontSize: 16,
-    fontWeight: "600",
-  },
+    to: {
+      color: "#22c55e",
+      fontSize: 16,
+      fontWeight: "600",
+    },
 
-  empty: {
-    textAlign: "center",
-    marginTop: 40,
-    color: Colors.textSecondary,
-  },
-  button: {
-    backgroundColor: Colors.primary,
-    padding: 12,
-    borderRadius: 10,
-    marginTop: 16,
-  },
+    button: {
+      backgroundColor:
+        Colors.primary,
+      padding: 12,
+      borderRadius: 10,
+      marginTop: 16,
+    },
 
-  buttonText: {
-    color: "#fff",
-    textAlign: "center",
-    fontWeight: "700",
-  },
-});
+    buttonText: {
+      color: "#fff",
+      textAlign: "center",
+      fontWeight: "700",
+    },
+
+    empty: {
+      textAlign: "center",
+      marginTop: 40,
+      color:
+        Colors.textSecondary,
+    },
+  });

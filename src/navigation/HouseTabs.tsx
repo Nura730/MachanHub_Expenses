@@ -9,6 +9,8 @@ import Colors from "../constants/colors";
 
 import SettlementTab from "../screens/house-details/SettlementTab";
 
+import HistoryTab from "../screens/house-details/HistoryTab";
+
 const Tab = createBottomTabNavigator();
 
 type Props = {
@@ -40,15 +42,13 @@ export default function HouseTabs({ house }: Props) {
         {() => <BalancesTab houseId={house.id} />}
       </Tab.Screen>
 
-      <Tab.Screen
-  name="Settlement"
->
-  {() => (
-    <SettlementTab
-      houseId={house.id}
-    />
-  )}
-</Tab.Screen>
+      <Tab.Screen name="Settlement">
+        {() => <SettlementTab houseId={house.id} />}
+      </Tab.Screen>
+
+      <Tab.Screen name="History">
+        {() => <HistoryTab houseId={house.id} />}
+      </Tab.Screen>
     </Tab.Navigator>
   );
 }
